@@ -23,7 +23,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import privatserver.Server;
+import privatserver.MainForm;
 
 /**
  *
@@ -89,11 +89,11 @@ public class XML
             StreamResult streamResult = new StreamResult(new File(PATH + "\\Profiles.xml"));
             
             transformer.transform(domSource, streamResult);
-            Server._getPlog().append("Файл успешно создан");
+            MainForm._addLinePLog("Файл успешно создан");
         }
         catch (ParserConfigurationException | TransformerException pce)
         {
-            Server._getPlog().append("Ошибка");
+            MainForm._addLinePLog("Ошибка");
         }
 
 
@@ -136,7 +136,7 @@ public class XML
         }
         catch (IOException | NumberFormatException | ParserConfigurationException | DOMException | SAXException e)
         {
-            Server._getPlog().append("Ошибка считывание базы\n");
+            MainForm._addLinePLog("Ошибка считывание базы");
             createXML(Deposit.getDeposits());
         }
     }

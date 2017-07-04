@@ -1,4 +1,8 @@
-package privatserver;
+/*
+ * Авторство Паршина Александра
+ * По всем вопросам писать на e-mail parshin_sashek@mail.ru
+ */
+package privatserver.classes;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,150 +16,49 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.regex.Matcher;
-import javax.swing.JTextArea;
-import javax.swing.text.DefaultCaret;
-import privatserver.classes.Deposit;
-import privatserver.classes.Message;
-import privatserver.classes.XML;
+import privatserver.MainForm;
 import util.Patterns;
+
 
 /**
  *
  * @author parsh
  */
-public class Server extends javax.swing.JFrame
+public class Server
 {
-    static public void _addLinepLog(String str)
-    {
-        pLog.append(str+"\n");
-    }
     static private ServerSocket server;
-    
-
     static private int port = 5678;
     static private Socket connection;
     static private ObjectInputStream input;
     static private ObjectOutputStream output;
-
-    static private int countConnections = 0;
-
-
-
-    public static void main(String args[])
-    {
-        Server serv = new Server();
-    }
-
-    public void setCount()
-    {
-        jLabel2.setText(Integer.toString(countConnections));
-    }
-
     
-    public static JTextArea _getPlog()
-    {
-        return pLog;
-    }
-
-
-
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
-
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        pLog = new javax.swing.JTextArea();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Сервер");
-        addWindowListener(new java.awt.event.WindowAdapter()
-        {
-            public void windowClosing(java.awt.event.WindowEvent evt)
-            {
-                formWindowClosing(evt);
-            }
-        });
-
-        jLabel1.setText("Количество подключений");
-
-        jLabel2.setText("0");
-
-        pLog.setColumns(20);
-        pLog.setRows(5);
-        pLog.setFocusable(false);
-        jScrollPane1.setViewportView(pLog);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel2)
-                .addContainerGap(356, Short.MAX_VALUE))
-            .addComponent(jScrollPane1)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
-        );
-
-        pack();
-        setLocationRelativeTo(null);
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void formWindowClosing(java.awt.event.WindowEvent evt)//GEN-FIRST:event_formWindowClosing
-    {
-//GEN-HEADEREND:event_formWindowClosing
-        XML.createXML(Deposit.getDeposits());
-    }//GEN-LAST:event_formWindowClosing
-
-////++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    static private int countConnections = 0;
+    static private int countName = 0;
+    
     public Server()
     {
-
-        initComponents();
-        this.setVisible(true);
-
-        DefaultCaret caret = (DefaultCaret) pLog.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-
-        XML.readXml();
-
-        pLog.append("Количество депозитов: " + Deposit.getDeposits().size() + "\n");
-
         try
         {
             server = new ServerSocket(port);
-            pLog.append("Сервер запущен на порте:" + Integer.toString(port) + "\n");
+            MainForm._addLinePLog("Сервер запущен на порте:" + Integer.toString(port));
             while (true)
             {
                 Socket socket = server.accept();
 
-                Connection con = new Connection(socket);
+                Server.Connection con = new Server.Connection(socket);
                 con.start();
             }
         }
         catch (IOException e)
         {
-            pLog.append("Ошибка: Порт " + port + " занят\n");
-            pLog.append("Освободите порт и перезаупстите программу\n");
+            MainForm._addLinePLog("Ошибка: Порт " + port + " занят");
+            MainForm._addLinePLog("Освободите порт и перезаупстите программу");
             return;
         }
     }
-
-    class Connection extends Thread
+    
+    
+        class Connection extends Thread
     {
 
         private BufferedReader in;
@@ -176,7 +79,7 @@ public class Server extends javax.swing.JFrame
             }
             catch (IOException e)
             {
-                pLog.append("Ошибка Connection\n");
+                MainForm._addLinePLog("Ошибка Connection");
                 close();
             }
         }
@@ -197,14 +100,14 @@ public class Server extends javax.swing.JFrame
         {
             if (str.equals("exit"))
                     {
-                        pLog.append(name + " отключился.\n");
+                        MainForm._addLinePLog(name + " отключился.");
                         countConnections--;
-                        setCount();
+                        MainForm._setLabelCount(countConnections);
                         return false;
                     }
                     else
                     {
-                        pLog.append("Запрос от (" + name + "): " + str + "\n");
+                        MainForm._addLinePLog("Запрос от (" + name + "): " + str);
 
                         Matcher mInfoAccount = Patterns.getInfoAccount().matcher(str);
                         Matcher mInfoDepositor = Patterns.getInfoDepositor().matcher(str);
@@ -366,10 +269,11 @@ public class Server extends javax.swing.JFrame
             try
             {
                 name = "Client ";
-                name += Integer.toString(countConnections + 1);
-                pLog.append("Новое подключение: " + name + "\n");
+                name += Integer.toString(countName + 1);
+                MainForm._addLinePLog("Новое подключение: " + name);
                 countConnections++;
-                setCount();
+                countName++;
+                MainForm._setLabelCount(countConnections);
                 
                 //Work
                 while (sheckInput(in.readLine())){}
@@ -395,15 +299,8 @@ public class Server extends javax.swing.JFrame
             }
             catch (Exception e)
             {
-                pLog.append("Ошибка закрытия сокета\n");
+                MainForm._addLinePLog("Ошибка закрытия сокета");
             }
         }
     }
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private static javax.swing.JLabel jLabel1;
-    private static javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private static javax.swing.JTextArea pLog;
-    // End of variables declaration//GEN-END:variables
 }
